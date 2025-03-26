@@ -1,0 +1,20 @@
+{
+  "COMMON": {
+    "INVALID_CONFIGURATION": "Configuration invalide"
+  },
+  "CARD": {
+    "NAME": "Donut de Ratio Énergétique",
+    "AUTOCONSUMPTION": "Autoconsommation",
+    "EXPORTED": "Exportée",
+    "SOLAR_CONSUMPTION": "Consommation Solaire",
+    "IMPORTED": "Importée"
+  },
+  "EDITOR": {
+    "NAME": "Nom (Optionnel)",
+    "AREA": "Zone à afficher",
+    "CHART_TYPE": "Type de Graphique",
+    "CHART_TYPE_SOLAR": "Production Solaire",
+    "CHART_TYPE_CONSUMPTION": "Consommation Réseau",
+    "COLLECTION_KEY": "Clé de Collection Énergétique"
+  }
+}

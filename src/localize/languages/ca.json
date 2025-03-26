@@ -1,0 +1,20 @@
+{
+  "COMMON": {
+    "INVALID_CONFIGURATION": "Configuració no vàlida"
+  },
+  "CARD": {
+    "NAME": "Rati Energètic",
+    "AUTOCONSUMPTION": "Autoconsum",
+    "EXPORTED": "Exportada",
+    "SOLAR_CONSUMPTION": "Consum Solar",
+    "IMPORTED": "Importada"
+  },
+  "EDITOR": {
+    "NAME": "Nom (Opcional)",
+    "AREA": "Àrea a mostrar",
+    "CHART_TYPE": "Tipus de Gràfic",
+    "CHART_TYPE_SOLAR": "Producció Solar",
+    "CHART_TYPE_CONSUMPTION": "Consum de Xarxa",
+    "COLLECTION_KEY": "Clau de Col·lecció Energètica"
+  }
+}

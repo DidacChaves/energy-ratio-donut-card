@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 module.exports = {
-  repositoryUrl: 'https://github.com/DidacChaves/boilerplate-card.git',
+  repositoryUrl: 'https://github.com/DidacChaves/energy-ratio-donut-card.git',
   plugins: [
     '@semantic-release/commit-analyzer',
     [

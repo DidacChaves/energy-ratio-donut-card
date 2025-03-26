@@ -1,21 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LitElement, html, TemplateResult, css } from 'lit';
+import { LitElement, html, TemplateResult } from 'lit';
 import { HomeAssistant, fireEvent, LovelaceCardEditor } from 'custom-card-helpers';
 
-import {BoilerplateCardConfig} from './types';
+import {EnergyRatioDonutConfig} from './types';
 import { customElement, property, state } from 'lit/decorators.js';
+import styles from './styles/editor.css'
+import {localize} from './localize/localize';
 
-@customElement('boilerplate-card-editor')
-export class BoilerplateCardEditor extends LitElement implements LovelaceCardEditor {
+@customElement('energy-ratio-donut-editor')
+export class EnergyRatioDonutCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @state() private _config?: BoilerplateCardConfig;
+  @state() private _config?: EnergyRatioDonutConfig;
 
   @state() private _helpers?: any;
 
   private _initialized = false;
 
-  public setConfig(config: BoilerplateCardConfig): void {
+  public setConfig(config: EnergyRatioDonutConfig): void {
     this._config = config;
     this.loadCardHelpers();
   }
@@ -28,24 +30,20 @@ export class BoilerplateCardEditor extends LitElement implements LovelaceCardEdi
     return true;
   }
 
+  get _chartType(): string {
+    return this._config?.chart_type || 'solar';
+  }
+
   get _name(): string {
     return this._config?.name || '';
   }
 
-  get _entity(): string {
-    return this._config?.entity || '';
+  get _collection_key(): string {
+    return this._config?.collection_key || '';
   }
 
   get _area(): string {
     return this._config?.area || '';
-  }
-
-  get _show_warning(): boolean {
-    return this._config?.show_warning || false;
-  }
-
-  get _show_error(): boolean {
-    return this._config?.show_error || false;
   }
 
   protected render(): TemplateResult | void {
@@ -53,53 +51,44 @@ export class BoilerplateCardEditor extends LitElement implements LovelaceCardEdi
       return html``;
     }
 
-    // You can restrict on domain type
-    const entities = Object.keys(this.hass.states);
-
     return html`
-      <ha-selector
-          .hass=${this.hass}
-          .selector=${{ entity: entities }}
-          .value=${this._entity}
-          .configValue=${'entity'}
-          name="entity"
-          @value-changed=${this._valueChanged}
-      ></ha-selector>
-      <ha-area-picker
-        .curValue=${this._area}
-        no-add
-        .hass=${this.hass}
-        .value=${this._area}
-        .configValue=${'area'}
-        label="Area to display"
-        @value-changed=${this._valueChanged}
-      >
-      </ha-area-picker>
-      <ha-form-grid>
-        <ha-form-col>
-          <ha-textfield
-            label="Name (Optional)"
-            .value=${this._name}
-            .configValue=${'name'}
-            @input=${this._valueChanged}></ha-textfield>
-        </ha-form-col>
-        <ha-form-col>
-          <ha-formfield .label=${`Toggle warning`}>
-            <ha-switch
-                .checked=${this._show_warning}
-                .configValue=${'show_warning'}
-                @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label= ${`Toggle error`}>
-            <ha-switch
-                .checked=${this._show_error}
-                .configValue=${'show_error'}
-                @change=${this._valueChanged}
-            ></ha-switch>
-          </ha-formfield>
-        </ha-form-col>
-      </ha-form-grid>
+        <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                    select: {
+                        options: [
+                            {value: 'solar', label: localize('EDITOR.CHART_TYPE_SOLAR')},
+                            {value: 'consumption', label: localize('EDITOR.CHART_TYPE_CONSUMPTION')}
+                        ]
+                    }
+                }}
+                .value=${this._chartType}
+                .configValue=${'chart_type'}
+                name="chart_type"
+                @value-changed=${this._valueChanged}
+        ></ha-selector>
+        <ha-textfield
+                label="Collection key"
+                .value=${this._collection_key}
+                label=${localize('EDITOR.COLLECTION_KEY')}
+                @input=${this._valueChanged}>
+        </ha-textfield>
+        <ha-area-picker
+                .curValue=${this._area}
+                no-add
+                .hass=${this.hass}
+                .value=${this._area}
+                .configValue=${'area'}
+                label=${localize('EDITOR.AREA')}
+                @value-changed=${this._valueChanged}
+        >
+        </ha-area-picker>
+        <ha-textfield
+                label=${localize('EDITOR.NAME')}
+                .value=${this._name}
+                .configValue=${'name'}
+                @input=${this._valueChanged}>
+        </ha-textfield>
     `;
   }
 
@@ -113,6 +102,7 @@ export class BoilerplateCardEditor extends LitElement implements LovelaceCardEdi
   private async loadCardHelpers(): Promise<void> {
     this._helpers = await (window as any).loadCardHelpers();
   }
+
 
   private _valueChanged(ev): void {
     if (!this._config || !this.hass) {
@@ -131,7 +121,7 @@ export class BoilerplateCardEditor extends LitElement implements LovelaceCardEdi
 
     if (target.configValue) {
       if (value === '') {
-        const tmpConfig = { ...this._config };
+        const tmpConfig = {...this._config};
         delete tmpConfig[target.configValue];
         this._config = tmpConfig;
       } else {
@@ -141,30 +131,10 @@ export class BoilerplateCardEditor extends LitElement implements LovelaceCardEdi
         };
       }
     }
-    fireEvent(this, 'config-changed', { config: this._config });
+    fireEvent(this, 'config-changed', {config: this._config});
   }
 
   static get styles() {
-    return [
-      css`
-        ha-form-grid {
-          grid-template-columns: repeat(var(--form-grid-column-count, auto-fit), minmax(var(--form-grid-min-width, 200px), 1fr));
-          gap: 24px 8px;
-          display: grid !important;
-        }
-        ha-selector,
-        ha-area-picker,
-        ha-formfield {
-          margin-bottom: 24px;
-          display: block;
-        }
-        mwc-formfield {
-          padding-bottom: 8px;
-        }
-        mwc-switch {
-          --mdc-theme-secondary: var(--switch-checked-color);
-        }
-      `,
-    ];
+    return styles;
   }
 }

@@ -5,6 +5,7 @@ import babel from '@rollup/plugin-babel';
 import { terser } from 'rollup-plugin-terser';
 import serve from 'rollup-plugin-serve';
 import json from '@rollup/plugin-json';
+import deletePlugin from 'rollup-plugin-delete'; // Importa el plugin
 
 const dev = process.env.ROLLUP_WATCH;
 
@@ -19,6 +20,10 @@ const serveopts = {
 };
 
 const plugins = [
+  deletePlugin({
+    targets: 'dist/*', // Elimina todos los archivos en la carpeta 'dist'
+    hook: 'buildStart', // Se ejecuta antes de cada compilación
+  }),
   nodeResolve({}),
   commonjs(),
   typescript(),
@@ -32,7 +37,7 @@ const plugins = [
 
 export default [
   {
-    input: 'src/boilerplate-card.ts',
+    input: 'src/energy-ratio-donut-card.ts',
     output: {
       dir: 'dist',
       format: 'es',

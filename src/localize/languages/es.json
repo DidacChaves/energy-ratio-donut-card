@@ -1,0 +1,20 @@
+{
+  "COMMON": {
+    "INVALID_CONFIGURATION": "Configuración no válida"
+  },
+  "CARD": {
+    "NAME": "Ratio Energético",
+    "AUTOCONSUMPTION": "Autoconsumo",
+    "EXPORTED": "Exportada",
+    "SOLAR_CONSUMPTION": "Consumo Solar",
+    "IMPORTED": "Importada"
+  },
+  "EDITOR": {
+    "NAME": "Nombre (Opcional)",
+    "AREA": "Área a mostrar",
+    "CHART_TYPE": "Tipo de Gráfico",
+    "CHART_TYPE_SOLAR": "Producción Solar",
+    "CHART_TYPE_CONSUMPTION": "Consumo de Red",
+    "COLLECTION_KEY": "Clave de Colección Energética"
+  }
+}

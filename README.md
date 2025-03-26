@@ -1,97 +1,107 @@
-# Boilerplate Card by [@DidacChaves](https://www.github.com/DidacChaves)
+# Energy Ratio Donut Card by [@DidacChaves](https://github.com/DidacChaves)
 
-A community boilerplate of best practices for Home Assistant Lovelace custom cards
+![Card Preview](https://raw.githubusercontent.com/DidacChaves/energy-ratio-donut-card/blob/master/docs/images/img.png?raw=true)
+
+Interactive donut chart visualizing energy distribution between solar production and grid consumption in Home Assistant.
 
 [![GitHub Release][releases-shield]][releases]
 [![License][license-shield]](LICENSE.md)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
-
 ![Project Maintenance][maintenance-shield]
 [![GitHub Activity][commits-shield]][commits]
-
 [![Community Forum][forum-shield]][forum]
 
-## Options
+## Features
 
-| Name              | Type    | Requirement  | Description                                 | Default             |
-| ----------------- | ------- | ------------ | ------------------------------------------- | ------------------- |
-| type              | string  | **Required** | `custom:boilerplate-card`                   |
-| name              | string  | **Optional** | Card name                                   | `Boilerplate`       |
-| show_error        | boolean | **Optional** | Show what an error looks like for the card  | `false`             |
-| show_warning      | boolean | **Optional** | Show what a warning looks like for the card | `false`             |
-| entity            | string  | **Optional** | Home Assistant entity ID.                   | `none`              |
-| tap_action        | object  | **Optional** | Action to take on tap                       | `action: more-info` |
-| hold_action       | object  | **Optional** | Action to take on hold                      | `none`              |
-| double_tap_action | object  | **Optional** | Action to take on double tap                | `none`              |
+- Dynamic donut chart showing energy distribution
+- Two display modes:
+  - Solar production vs self-consumption
+  - Grid import vs consumption
+- Real-time data from Home Assistant energy dashboard
+- Automatic period synchronization
+- Percentage breakdown calculations
+- Multi-language support (EN/ES/CA/FR/DE/IT)
 
-## Action Options
+## Installation
 
-| Name            | Type   | Requirement  | Description                                                                                                                            | Default     |
-| --------------- | ------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| action          | string | **Required** | Action to perform (more-info, toggle, call-service, navigate url, none)                                                                | `more-info` |
-| navigation_path | string | **Optional** | Path to navigate to (e.g. /lovelace/0/) when action defined as navigate                                                                | `none`      |
-| url             | string | **Optional** | URL to open on click when action is url. The URL will open in a new tab                                                                | `none`      |
-| service         | string | **Optional** | Service to call (e.g. media_player.media_play_pause) when action defined as call-service                                               | `none`      |
-| service_data    | object | **Optional** | Service data to include (e.g. entity_id: media_player.bedroom) when action defined as call-service                                     | `none`      |
-| haptic          | string | **Optional** | Haptic feedback _success, warning, failure, light, medium, heavy, selection_ | `none`      |
-| repeat          | number | **Optional** | How often to repeat the `hold_action` in milliseconds.                                                                                 | `none`       |
+### HACS (not distributed yet)
+1. Open HACS in your Home Assistant
+2. Go to "Frontend" section
+3. Click "+ Explore & Download Repositories"
+4. Search for "Energy Ratio Donut"
+5. Click "Download" and restart HA
 
-## Starting a new card from boilerplate-card
+### HACS (Custom Repository)
+1. Open HACS > Frontend
+2. Click the 3-dot menu (top-right) > "Custom repositories"
+3. Add repository URL:  
+   `https://github.com/DidacChaves/energy-ratio-donut-card`
+4. Set category: "Dashboard"
+5. Click "Add"
+6. Find the card in new repositories list
+7. Click "Download" and restart HA
 
-### Step 1
-
-Click the "Use this template" button on the main page and clone the new repository to your machine
-
-### Step 2
-
-Install necessary modules (verified to work in node 18.x)
-
-`yarn install` or `npm install`
-
-### Step 3
-
-Do a test lint & build on the project. You can see available scripts in the package.json
-
-`yarn build` or `npm run build`
-
-### Step 4
-
-Search the repository for all instances of `TODO` and handle the changes/suggestions
-
-### Step 5
-
-Customize to suit your needs and contribute it back to the community
-
-## Starting a new card from boilerplate-card with [devcontainer][devcontainer]
-
-Note: this is available only in vscode ensure you have the [Remote Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension installed.
-
-1. Fork and clone the repository.
-2. Open a [devcontainer][devcontainer] terminal and run `npm start` when it's ready.
-3. The compiled `.js` file will be accessible on
-   `http://127.0.0.1:5000/boilerplate-card.js`.
-4. On a running Home Assistant installation add this to your resources on your configuation -> panels:
+### Manual
+1. Download `energy-ratio-donut-card.js` from the [latest release][releases]
+2. Place it in your `config/www` directory
+3. Add resource reference in Lovelace configuration:
 
 ```yaml
-- url: 'http://127.0.0.1:5000/rainfall-tracker-card.js'
-  type: module javascript
+resources:
+  - url: /local/energy-ratio-donut-card.js
+    type: module
 ```
 
-_Change "127.0.0.1" to the IP of your development machine._
+## Configuration
+
+### Card Options
+
+| Name             | Type    | Requirement    | Description                               | Default  |
+|------------------|---------|----------------|-------------------------------------------|----------|
+| `type`           | string  | **Required**   | `custom:energy-ratio-donut-card`          | -        |
+| `name`           | string  | **Optional**   | Card name                                 | -        |
+| `collection_key` | string  | **Optional**   | Energy dashboard collection key           | `energy` |
+| `chart_type`     | string  | **Optional**   | `solar` or `consumption` display mode     | `solar`  |
+
+## Examples
+
+### Basic Solar View
+```yaml
+type: custom:energy-ratio-donut-card
+```
+
+### Grid Consumption View
+```yaml
+type: custom:energy-ratio-donut-card
+name: Energy Consumption
+chart_type: consumption
+collection_key: energy_custom_selector
+```
+
+## Supported Languages
+
+The following languages are supported:
+
+| Language           | Yaml value | Supported | Translated by                                       |
+|--------------------|------------|-----------|-----------------------------------------------------|
+| English            | `en`       | v1.0.0    | [@DidacChaves](https://www.github.com/DidacChaves)  |
+| Catalan (Català)   | `ca`       | v1.0.0    | [@DidacChaves](https://www.github.com/DidacChaves)  |
+| Spanish (Español)  | `es`       | v1.0.0    | [@DidacChaves](https://www.github.com/DidacChaves)  |
+| Italian (Italiano) | `it`       | v1.0.0    | [@DidacChaves](https://www.github.com/DidacChaves)  |
+| German (Deutsch)   | `de`       | v1.0.0    | [@DidacChaves](https://www.github.com/DidacChaves)  |
+| French (Français)  | `fr`       | v1.0.0    | [@DidacChaves](https://www.github.com/DidacChaves)  |
 
 ## Credits
 
-This project is based on the template provided by [@iantrich](https://www.github.com/iantrich).
+Special thanks to:
+- [@iantrich](https://github.com/iantrich) for the original template
+- Home Assistant community contributors
 
-Special thanks for their valuable contributions to the Home Assistant community and for sharing tools and resources that help others build amazing projects.
-
-[commits-shield]: https://img.shields.io/github/commit-activity/y/DidacChaves/boilerplate-card.svg?style=for-the-badge
-[commits]: https://github.com/DidacChaves/boilerplate-card/commits/master
-[devcontainer]: https://code.visualstudio.com/docs/remote/containers
-[discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
+[commits-shield]: https://img.shields.io/github/commit-activity/y/DidacChaves/energy-ratio-donut-card.svg?style=for-the-badge
+[commits]: https://github.com/DidacChaves/energy-ratio-donut-card/commits/main
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
-[forum]: https://community.home-assistant.io/c/projects/frontend
-[license-shield]: https://img.shields.io/github/license/DidacChaves/boilerplate-card.svg?style=for-the-badge
+[forum]: https://community.home-assistant.io/
+[license-shield]: https://img.shields.io/github/license/DidacChaves/energy-ratio-donut-card.svg?style=for-the-badge
 [maintenance-shield]: https://img.shields.io/maintenance/yes/2025.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/DidacChaves/boilerplate-card.svg?style=for-the-badge
-[releases]: https://github.com/DidacChaves/boilerplate-card/releases
+[releases-shield]: https://img.shields.io/github/release/DidacChaves/energy-ratio-donut-card.svg?style=for-the-badge
+[releases]: https://github.com/DidacChaves/energy-ratio-donut-card/releases

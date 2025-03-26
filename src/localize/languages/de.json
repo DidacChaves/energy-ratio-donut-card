@@ -1,0 +1,20 @@
+{
+  "COMMON": {
+    "INVALID_CONFIGURATION": "Ungültige Konfiguration"
+  },
+  "CARD": {
+    "NAME": "Energie Verhältnis Donut",
+    "AUTOCONSUMPTION": "Eigenverbrauch",
+    "EXPORTED": "Exportiert",
+    "SOLAR_CONSUMPTION": "Solarverbrauch",
+    "IMPORTED": "Importiert"
+  },
+  "EDITOR": {
+    "NAME": "Name (Optional)",
+    "AREA": "Anzeigebereich",
+    "CHART_TYPE": "Diagrammtyp",
+    "CHART_TYPE_SOLAR": "Solarproduktion",
+    "CHART_TYPE_CONSUMPTION": "Netzverbrauch",
+    "COLLECTION_KEY": "Energie-Sammlungsschlüssel"
+  }
+}
