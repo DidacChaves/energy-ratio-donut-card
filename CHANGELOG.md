@@ -1,3 +1,9 @@
+## 1.0.0 (2025-03-26)
+
+### Features
+
+* add energy ratio donut card with multi-language support ([3e7f068](https://github.com/DidacChaves/energy-ratio-donut-card/commit/3e7f068708fb3a235b156d4d392275d627ac6abf))
+
 ## [1.1.1](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.1.0...v1.1.1) (2025-03-22)
 
 ### Bug Fixes
