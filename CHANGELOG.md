@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.0.0...v1.1.0) (2025-04-01)
+
+### Features
+
+* update localization strings and add show date option (master) ([5d1cee5](https://github.com/DidacChaves/energy-ratio-donut-card/commit/5d1cee5c91b24dda511d86c67d31c519cb803da5))
+
 ## 1.0.0 (2025-03-26)
 
 ### Features
