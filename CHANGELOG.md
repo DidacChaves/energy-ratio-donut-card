@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.1.0...v1.1.1) (2025-04-01)
+
+### Bug Fixes
+
+* update energy ratio donut card styles and improve data fetching logic (issue-123) ([943f071](https://github.com/DidacChaves/energy-ratio-donut-card/commit/943f07148d6e47de34c20b03755d81679f5097ab))
+
 ## [1.1.0](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.0.0...v1.1.0) (2025-04-01)
 
 ### Features
