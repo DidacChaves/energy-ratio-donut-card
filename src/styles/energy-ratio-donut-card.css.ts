@@ -79,14 +79,15 @@ export default css`
   }
 
   .serie-center {
-    font-size: 22px;
+    font-size: 20px;
+    font-weight: 500;
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    padding-top: 2px;
+    padding-top: 4px;
   }
 
   .serie-center.no-data {

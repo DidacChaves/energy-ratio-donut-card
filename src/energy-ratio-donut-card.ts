@@ -96,21 +96,34 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     super.connectedCallback();
     window.addEventListener('resize', this.resizeChartContainer);
 
-    if (this.hass) {
-      this._energyCollection = getEnergyDataCollection(this.hass, '_' + this._config.collection_key);
+    const initEnergyCollection = (attempts = 0) => {
+      if (!this.hass) {
+        if (attempts < 10) {
+          setTimeout(() => initEnergyCollection(attempts + 1), 100);
+        }
+        return;
+      }
 
-      this._energyCollection?.subscribe((energyData: EnergyData) => {
+      if (!this._energyCollection) {
+        this._energyCollection = getEnergyDataCollection(this.hass, '_' + this._config.collection_key);
+      }
+
+      if (!this._energyCollection) {
+        if (attempts < 10) {
+          setTimeout(() => initEnergyCollection(attempts + 1), 200);
+        }
+        return;
+      }
+
+      this._energyCollection.subscribe((energyData: EnergyData) => {
         this._globalPeriod = {
           start: energyData.start,
-          end: energyData.end || new Date()
+          end: energyData.end || new Date(),
         };
         this._updateEnergyDataFromCollection(energyData);
-        setTimeout(() => {
-          this._renderChart();
-          this.resizeChartContainer();
-        }, 0);
       });
-    }
+    };
+    initEnergyCollection();
   }
 
   disconnectedCallback(): void {
@@ -149,6 +162,8 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       };
 
       this._dataLoaded = true;
+      this.requestUpdate();
+
     } catch (err) {
       console.error("Error updating energy data from collection:", err);
     }
@@ -185,14 +200,11 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     if (!this._dataLoaded || !this._energyData || !this.shadowRoot) {
       return;
     }
-
     if (!this.shadowRoot) {
       return;
     }
-
     const ctx = this.shadowRoot.getElementById('myChart') as HTMLCanvasElement;
     if (!ctx) {
-      setTimeout(() => this._renderChart(), 100);
       return;
     }
 
@@ -286,7 +298,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                             ${this._config.chart_type !== 'consumption' ? localize('CARD.AUTOCONSUMPTION') : localize('CARD.SOLAR_CONSUMPTION')}<br/>
 
                                 (${this._config.chart_type !== 'consumption' ?
-                                    (this._energyData.solar > 0 ? (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2) + '%'
+                                    (this._energyData.solar > 0 ? (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2)
                                             : '0%') :
                                     ((this._energyData.imported / consumoTotal) * 100).toFixed(2)
                             }%)
