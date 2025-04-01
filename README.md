@@ -1,6 +1,6 @@
 # Energy Ratio Donut Card by [@DidacChaves](https://github.com/DidacChaves)
 
-![Card Preview](https://raw.githubusercontent.com/DidacChaves/energy-ratio-donut-card/blob/master/docs/images/img.png?raw=true)
+![Card Preview](https://github.com/DidacChaves/energy-ratio-donut-card/blob/master/docs/images/img.png?raw=true)
 
 Interactive donut chart visualizing energy distribution between solar production and grid consumption in Home Assistant.
 
