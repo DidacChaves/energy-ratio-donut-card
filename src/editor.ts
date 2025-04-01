@@ -46,6 +46,10 @@ export class EnergyRatioDonutCardEditor extends LitElement implements LovelaceCa
     return this._config?.area || '';
   }
 
+  get _show_date(): boolean {
+    return this._config?.show_date || false;
+  }
+
   protected render(): TemplateResult | void {
     if (!this.hass || !this._helpers) {
       return html``;
@@ -89,6 +93,13 @@ export class EnergyRatioDonutCardEditor extends LitElement implements LovelaceCa
                 .configValue=${'name'}
                 @input=${this._valueChanged}>
         </ha-textfield>
+        <ha-formfield .label=${localize('EDITOR.SHOW_DATE')}>
+            <ha-switch
+                    .checked=${this._show_date}
+                    .configValue=${'show_date'}
+                    @change=${this._valueChanged}
+            ></ha-switch>
+        </ha-formfield>
     `;
   }
 

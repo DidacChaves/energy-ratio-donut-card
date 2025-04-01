@@ -73,7 +73,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       : ['#ff9800', '#ff5722'];
 
     this._config = {
-      name: localize('CARD.NAME'),
+      name: config.chart_type !== 'consumption' ? localize('CARD.ENERGY_PRODUCTION_TITLE'): localize('CARD.CONSUMPTION_TITLE'),
       collection_key: config.collection_key ? config.collection_key : 'energy',
       ...config,
     };
@@ -105,6 +105,10 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
           end: energyData.end || new Date()
         };
         this._updateEnergyDataFromCollection(energyData);
+        setTimeout(() => {
+          this._renderChart();
+          this.resizeChartContainer();
+        }, 0);
       });
     }
   }
@@ -178,9 +182,19 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
   private chartInstance: Chart | null = null;
 
   private _renderChart() {
-    if (!this._dataLoaded || !this._energyData) return;
-    const ctx = this.shadowRoot?.getElementById('myChart') as HTMLCanvasElement;
-    if (!ctx) return;
+    if (!this._dataLoaded || !this._energyData || !this.shadowRoot) {
+      return;
+    }
+
+    if (!this.shadowRoot) {
+      return;
+    }
+
+    const ctx = this.shadowRoot.getElementById('myChart') as HTMLCanvasElement;
+    if (!ctx) {
+      setTimeout(() => this._renderChart(), 100);
+      return;
+    }
 
     let data: number[];
     if (this._config.chart_type !== 'consumption') {
@@ -244,6 +258,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       return html``;
     }
 
+    const consumoTotal = (this._energyData.solar - this._energyData.exported) + this._energyData.imported;
     return html`
         <ha-card
                 @action=${this._handleAction}
@@ -254,7 +269,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                 tabindex="0">
             <div class="header">
                 <div class="name" title="${this._config.name}">${this._config.name}</div>
-                ${this._globalPeriod ? html`
+                ${this._globalPeriod && this._config.show_date ? html`
                     <div class="period-info">
                         ${this._formatDate(this._globalPeriod.start)} - ${this._formatDate(this._globalPeriod.end)}
                     </div>
@@ -263,15 +278,18 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
             <div class="content">
                 <div class="background">
                     <div class="left-column">
-                        <div class="serie serie-one" style="color: ${this._config.chart_type !== 'consumption' ? this._chartColors[1] : this._chartColors[0]}">
+                        <div class="serie serie-one" style="color: ${this._chartColors[1]}">
                             ${(this._energyData.solar - this._energyData.exported).toFixed(2)}
                             <span>${this._energyData.unit}</span>
                         </div>
                         <div class="serie-label">
-                            ${this._config.chart_type !== 'consumption' ? localize('CARD.AUTOCONSUMPTION') : localize('CARD.EXPORTED')}<br/>
-                                (${this._energyData.solar > 0 ?
-                                    (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2) + '%'
-                                    : '0%'})
+                            ${this._config.chart_type !== 'consumption' ? localize('CARD.AUTOCONSUMPTION') : localize('CARD.SOLAR_CONSUMPTION')}<br/>
+
+                                (${this._config.chart_type !== 'consumption' ?
+                                    (this._energyData.solar > 0 ? (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2) + '%'
+                                            : '0%') :
+                                    ((this._energyData.imported / consumoTotal) * 100).toFixed(2)
+                            }%)
                         </div>
                     </div>
                     <div class="center-column">
@@ -287,7 +305,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                         </div>
                     </div>
                     <div class="right-column">
-                        <div class="serie serie-two" style="color: ${this._config.chart_type !== 'consumption' ? this._chartColors[0] : this._chartColors[1]}">
+                        <div class="serie serie-two" style="color: ${this._chartColors[0]}">
                             ${this._config.chart_type !== 'consumption' ?
                                     this._energyData.exported.toFixed(2) :
                                     this._energyData.imported.toFixed(2)}
@@ -297,7 +315,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                             ${this._config.chart_type !== 'consumption' ? localize('CARD.EXPORTED') : localize('CARD.IMPORTED')}<br/>
                                 (${this._config.chart_type !== 'consumption' ?
                                     (this._energyData.exported / this._energyData.solar * 100).toFixed(2) :
-                                    (this._energyData.imported / (this._energyData.imported + (this._energyData.solar - this._energyData.exported)) * 100).toFixed(2)
+                                    (((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100).toFixed(2)
                             }%)
                         </div>
                     </div>

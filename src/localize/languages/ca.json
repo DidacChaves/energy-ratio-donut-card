@@ -3,10 +3,11 @@
     "INVALID_CONFIGURATION": "Configuració no vàlida"
   },
   "CARD": {
-    "NAME": "Rati Energètic",
+    "ENERGY_PRODUCTION_TITLE": "Producció d'energia",
+    "CONSUMPTION_TITLE": "Consum",
     "AUTOCONSUMPTION": "Autoconsum",
     "EXPORTED": "Exportada",
-    "SOLAR_CONSUMPTION": "Consum Solar",
+    "SOLAR_CONSUMPTION": "Autosuficiencia",
     "IMPORTED": "Importada"
   },
   "EDITOR": {
@@ -15,6 +16,7 @@
     "CHART_TYPE": "Tipus de Gràfic",
     "CHART_TYPE_SOLAR": "Producció Solar",
     "CHART_TYPE_CONSUMPTION": "Consum de Xarxa",
-    "COLLECTION_KEY": "Clau de Col·lecció Energètica"
+    "COLLECTION_KEY": "Clau de Col·lecció Energètica",
+    "SHOW_DATE": "Mostrar data"
   }
 }

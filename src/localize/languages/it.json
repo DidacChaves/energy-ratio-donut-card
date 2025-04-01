@@ -3,10 +3,11 @@
     "INVALID_CONFIGURATION": "Configurazione non valida"
   },
   "CARD": {
-    "NAME": "Rapporto Energia",
+    "ENERGY_PRODUCTION_TITLE": "Produzione Energetica",
+    "CONSUMPTION_TITLE": "Consumo",
     "AUTOCONSUMPTION": "Autoconsumo",
     "EXPORTED": "Esportata",
-    "SOLAR_CONSUMPTION": "Consumo Solare",
+    "SOLAR_CONSUMPTION": "Autosufficienza",
     "IMPORTED": "Importata"
   },
   "EDITOR": {
@@ -15,6 +16,7 @@
     "CHART_TYPE": "Tipo di Grafico",
     "CHART_TYPE_SOLAR": "Produzione Solare",
     "CHART_TYPE_CONSUMPTION": "Consumo Rete",
-    "COLLECTION_KEY": "Chiave Raccolta Energia"
+    "COLLECTION_KEY": "Chiave Raccolta Energia",
+    "SHOW_DATE": "Mostra data"
   }
 }

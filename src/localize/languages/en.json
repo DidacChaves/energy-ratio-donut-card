@@ -3,10 +3,11 @@
     "INVALID_CONFIGURATION": "Invalid configuration"
   },
   "CARD": {
-    "NAME": "Energy Ratio Donut",
+    "ENERGY_PRODUCTION_TITLE": "Energy Production",
+    "CONSUMPTION_TITLE": "Consumption",
     "AUTOCONSUMPTION": "Autoconsumption",
     "EXPORTED": "Exported",
-    "SOLAR_CONSUMPTION": "Solar Consumption",
+    "SOLAR_CONSUMPTION": "Autosufficiency",
     "IMPORTED": "Imported"
   },
   "EDITOR": {
@@ -15,6 +16,7 @@
     "CHART_TYPE": "Chart Type",
     "CHART_TYPE_SOLAR": "Solar Production",
     "CHART_TYPE_CONSUMPTION": "Grid Consumption",
-    "COLLECTION_KEY": "Energy Collection Key"
+    "COLLECTION_KEY": "Energy Collection Key",
+    "SHOW_DATE": "Show date"
   }
 }

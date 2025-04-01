@@ -3,10 +3,11 @@
     "INVALID_CONFIGURATION": "Configuración no válida"
   },
   "CARD": {
-    "NAME": "Ratio Energético",
+    "ENERGY_PRODUCTION_TITLE": "Producción de energía",
+    "CONSUMPTION_TITLE": "Consumo",
     "AUTOCONSUMPTION": "Autoconsumo",
     "EXPORTED": "Exportada",
-    "SOLAR_CONSUMPTION": "Consumo Solar",
+    "SOLAR_CONSUMPTION": "Autosuficiencia",
     "IMPORTED": "Importada"
   },
   "EDITOR": {
@@ -15,6 +16,7 @@
     "CHART_TYPE": "Tipo de Gráfico",
     "CHART_TYPE_SOLAR": "Producción Solar",
     "CHART_TYPE_CONSUMPTION": "Consumo de Red",
-    "COLLECTION_KEY": "Clave de Colección Energética"
+    "COLLECTION_KEY": "Clave de Colección Energética",
+    "SHOW_DATE": "Mostrar fecha"
   }
 }

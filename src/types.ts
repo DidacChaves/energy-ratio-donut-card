@@ -31,4 +31,5 @@ export interface EnergyRatioDonutConfig extends LovelaceCardConfig {
   collection_key?: string;
   grid_options?: LovelaceGridOptions;
   chart_type?: string;
+  show_date?: boolean;
 }

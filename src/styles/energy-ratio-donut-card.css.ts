@@ -86,6 +86,7 @@ export default css`
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    padding-top: 2px;
   }
 
   .serie-center.no-data {
