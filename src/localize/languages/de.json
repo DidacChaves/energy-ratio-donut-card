@@ -10,6 +10,9 @@
     "SOLAR_CONSUMPTION": "Eigenversorgung",
     "IMPORTED": "Importiert"
   },
+  "ERROR": {
+    "NO_ENERGY_DATA": "Fehler: Es wurden keine Energiedaten empfangen. Bitte stelle sicher, dass du eine Karte `type: energy-date-selection` zu diesem Bildschirm hinzugefügt hast."
+  },
   "EDITOR": {
     "NAME": "Name (Optional)",
     "AREA": "Anzeigebereich",

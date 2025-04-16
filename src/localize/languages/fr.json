@@ -10,6 +10,9 @@
     "SOLAR_CONSUMPTION": "Auto-suffisance",
     "IMPORTED": "Importée"
   },
+  "ERROR": {
+    "NO_ENERGY_DATA": "Erreur : Aucune donnée énergétique reçue. Veuillez vous assurer d'avoir ajouté une carte `type: energy-date-selection` à cet écran."
+  },
   "EDITOR": {
     "NAME": "Nom (Optionnel)",
     "AREA": "Zone à afficher",

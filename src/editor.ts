@@ -72,9 +72,9 @@ export class EnergyRatioDonutCardEditor extends LitElement implements LovelaceCa
                 @value-changed=${this._valueChanged}
         ></ha-selector>
         <ha-textfield
-                label="Collection key"
-                .value=${this._collection_key}
                 label=${localize('EDITOR.COLLECTION_KEY')}
+                .value=${this._collection_key}
+                .configValue=${'collection_key'}
                 @input=${this._valueChanged}>
         </ha-textfield>
         <ha-area-picker

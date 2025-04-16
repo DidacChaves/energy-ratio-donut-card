@@ -10,6 +10,9 @@
     "SOLAR_CONSUMPTION": "Autosuficiencia",
     "IMPORTED": "Importada"
   },
+  "ERROR": {
+    "NO_ENERGY_DATA": "Error: No s'han rebut dades d'energia. Assegura't d'afegir una targeta `type: energy-date-selection` a aquesta pantalla."
+  },
   "EDITOR": {
     "NAME": "Nom (Opcional)",
     "AREA": "Àrea a mostrar",

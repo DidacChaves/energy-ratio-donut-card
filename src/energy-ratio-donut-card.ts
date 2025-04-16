@@ -49,6 +49,8 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
   };
   @state() private _chartColors = ['#19ab6d', '#91de41'];
   @state() private _dataLoaded = false;
+  @state() private _showErrorState = false;
+  @state() private _errorMessage = '';
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./editor');
@@ -98,8 +100,12 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
 
     const initEnergyCollection = (attempts = 0) => {
       if (!this.hass) {
-        if (attempts < 10) {
+        if (attempts < 5) {
           setTimeout(() => initEnergyCollection(attempts + 1), 100);
+        } else {
+          this._showErrorState = true;
+          this._errorMessage = localize('ERROR.NO_ENERGY_DATA');
+          this.requestUpdate();
         }
         return;
       }
@@ -109,12 +115,15 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       }
 
       if (!this._energyCollection) {
-        if (attempts < 10) {
-          setTimeout(() => initEnergyCollection(attempts + 1), 200);
+        if (attempts < 5) {
+          setTimeout(() => initEnergyCollection(attempts + 1), 150);
+        } else {
+          this._showErrorState = true;
+          this._errorMessage = localize('ERROR.NO_ENERGY_DATA');
+          this.requestUpdate();
         }
         return;
       }
-
       this._energyCollection.subscribe((energyData: EnergyData) => {
         this._globalPeriod = {
           start: energyData.start,
@@ -270,6 +279,10 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       return html``;
     }
 
+    if (this._showErrorState) {
+      return this._showError(this._errorMessage);
+    }
+
     const consumoTotal = (this._energyData.solar - this._energyData.exported) + this._energyData.imported;
     return html`
         <ha-card
@@ -299,8 +312,8 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
 
                                 (${this._config.chart_type !== 'consumption' ?
                                     (this._energyData.solar > 0 ? (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2)
-                                            : '0%') :
-                                    ((this._energyData.imported / consumoTotal) * 100).toFixed(2)
+                                            : '0.00') :
+                                    (isNaN((this._energyData.imported / consumoTotal) * 100)?0:(this._energyData.imported / consumoTotal) * 100).toFixed(2)
                             }%)
                         </div>
                     </div>
@@ -326,8 +339,8 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                         <div class="serie-label">
                             ${this._config.chart_type !== 'consumption' ? localize('CARD.EXPORTED') : localize('CARD.IMPORTED')}<br/>
                                 (${this._config.chart_type !== 'consumption' ?
-                                    (this._energyData.exported / this._energyData.solar * 100).toFixed(2) :
-                                    (((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100).toFixed(2)
+                                    (isNaN(this._energyData.exported / this._energyData.solar * 100) ?0: this._energyData.exported / this._energyData.solar * 100).toFixed(2) :
+                                    (isNaN(((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100)?0:((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100).toFixed(2)
                             }%)
                         </div>
                     </div>
@@ -335,6 +348,17 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
             </div>
         </ha-card>
     `;
+  }
+
+  private _showError(error: string): TemplateResult {
+    const errorCard = document.createElement('hui-error-card');
+    errorCard.setConfig({
+      type: 'error',
+      error,
+      origConfig: this._config,
+    });
+
+    return html` ${errorCard} `;
   }
 
   private _handleAction(ev: ActionHandlerEvent): void {

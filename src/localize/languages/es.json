@@ -10,6 +10,9 @@
     "SOLAR_CONSUMPTION": "Autosuficiencia",
     "IMPORTED": "Importada"
   },
+  "ERROR": {
+    "NO_ENERGY_DATA": "Error: No se recibieron datos de energía. Asegúrate de agregar una tarjeta `type: energy-date-selection` a esta pantalla."
+  },
   "EDITOR": {
     "NAME": "Nombre (Opcional)",
     "AREA": "Área a mostrar",
