@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.1.1...v1.2.0) (2025-04-16)
+
+### Features
+
+* **localization:** add error message for missing energy data (issue [#123](https://github.com/DidacChaves/energy-ratio-donut-card/issues/123)) ([9364afd](https://github.com/DidacChaves/energy-ratio-donut-card/commit/9364afd753a01bca1baf10c57ec4e53817c62e26))
+
 ## [1.1.1](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.1.0...v1.1.1) (2025-04-01)
 
 ### Bug Fixes
