@@ -1,6 +1,6 @@
 {
   "name": "energy-ratio-donut-card",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Lovelace energy-ratio-donut-card",
   "main": "dist/energy-ratio-donut-card.js",
   "scripts": {

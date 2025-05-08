@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.2.0...v1.2.1) (2025-05-08)
+
+### Bug Fixes
+
+* adjust chart container height after a delay (issue [#123](https://github.com/DidacChaves/energy-ratio-donut-card/issues/123)) ([2ced349](https://github.com/DidacChaves/energy-ratio-donut-card/commit/2ced3495dbfa8103673a93d78d78e6165e78f532))
+
 ## [1.2.0](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.1.1...v1.2.0) (2025-04-16)
 
 ### Features
