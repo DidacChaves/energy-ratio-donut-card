@@ -197,8 +197,10 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     requestAnimationFrame(() => {
       const chartContainer = this.shadowRoot?.getElementById('chart-container');
       if (chartContainer) {
-        const width = chartContainer.offsetWidth;
-        chartContainer.style.height = `${width}px`;
+        setTimeout(() => {
+          const width = chartContainer.offsetWidth;
+          chartContainer.style.height = `${width}px`;
+        }, 500);
       }
     });
   };
@@ -225,8 +227,8 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       ];
     } else {
       data = [
-        this._energyData.solar - this._energyData.exported,
-        this._energyData.imported
+        this._energyData.imported,
+        this._energyData.solar - this._energyData.exported
       ];
     }
 
