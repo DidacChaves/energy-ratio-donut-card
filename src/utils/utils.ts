@@ -26,12 +26,11 @@ export const createEntityErrorWarning = (
   entityId: string
 ): string => `${error} Entity ${entityId || "[empty]"}`
 
-
-// Format function imported and adapted from custom-card-helpers
-// All rights reserved
-// Modifications include:
-//   - removing unecessary state type formatting
-//   - allowing to pass down formatting options
+// Función de formato importada y adaptada de custom-card-helpers
+// Todos los derechos reservados
+// Modificaciones incluyen:
+//   - eliminación de formato innecesario de tipo de estado
+//   - permitir pasar opciones de formato
 export const computeStateDisplay = (
   localize: LocalizeFunc,
   stateObj: HassEntity,
@@ -45,7 +44,7 @@ export const computeStateDisplay = (
     return localize(`state.default.${compareState}`);
   }
 
-  // Entities with a `unit_of_measurement` or `state_class` are numeric values and should use `formatNumber`
+  // Las entidades con `unit_of_measurement` o `state_class` son valores numéricos y deben usar `formatNumber`
   if (isNumericState(stateObj)) {
     if (stateObj.attributes.device_class === "monetary") {
       try {
@@ -55,7 +54,7 @@ export const computeStateDisplay = (
           currency: stateObj.attributes.unit_of_measurement,
         });
       } catch (_err) {
-        // fallback to default
+        // volver al valor por defecto
       }
     }
     return `${formatNumber(compareState, locale, options)}${
@@ -67,17 +66,17 @@ export const computeStateDisplay = (
 
   const domain = computeStateDomain(stateObj);
 
-  // content was removed here from the original function
+  // contenido eliminado aquí de la función original
 
   return (
-    // Return device class translation
+    // Retorna la traducción de la clase de dispositivo
     (stateObj.attributes.device_class &&
       localize(
         `component.${domain}.state.${stateObj.attributes.device_class}.${compareState}`
       )) ||
-    // Return default translation
+    // Retorna la traducción por defecto
     localize(`component.${domain}.state._.${compareState}`) ||
-    // We don't know! Return the raw state.
+    // ¡No lo sabemos! Retorna el estado sin procesar.
     compareState
   );
 };
@@ -100,7 +99,7 @@ export const formatNumber = (
     ? numberFormatToLocale(localeOptions)
     : undefined;
 
-  // Polyfill for Number.isNaN, which is more reliable than the global isNaN()
+  // Polyfill para Number.isNaN, que es más confiable que el global isNaN()
   Number.isNaN =
     Number.isNaN ||
     function isNaN(input) {
@@ -119,7 +118,7 @@ export const formatNumber = (
       ).format(Number(num));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      // Don't fail when using "TEST" language
+      // No fallar al usar el idioma "TEST"
       // eslint-disable-next-line no-console
       console.error(err);
       return new Intl.NumberFormat(
@@ -154,7 +153,7 @@ const getDefaultFormatOptions = (
     return defaultOptions;
   }
 
-  // Keep decimal trailing zeros if they are present in a string numeric value
+  // Mantener ceros decimales finales si están presentes en un valor numérico tipo string
   if (
     !options ||
     (!options.minimumFractionDigits && !options.maximumFractionDigits)

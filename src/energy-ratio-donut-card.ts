@@ -145,17 +145,17 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     if (!energyData.prefs) return;
 
     try {
-      // Nuevo método: soporta ambos formatos (arrays y campos directos)
+      // New method: supports both formats (arrays and direct fields)
       const importedIds: string[] = [];
       const exportedIds: string[] = [];
       const solarIds: string[] = [];
 
       for (const source of energyData.prefs.energy_sources) {
         if (source.type === 'grid') {
-          // Formato nuevo: campos directos
+          // New format: direct fields
           if ((source as any).stat_energy_from) importedIds.push((source as any).stat_energy_from);
           if ((source as any).stat_energy_to) exportedIds.push((source as any).stat_energy_to);
-          // Formato antiguo: arrays
+          // Old format: arrays
           if (Array.isArray((source as any).flow_from)) {
             importedIds.push(...(source as any).flow_from.map((f: any) => f.stat_energy_from));
           }

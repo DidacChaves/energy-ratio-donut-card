@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /*
- * This file is imported from ha-sankey-chart and is licensed under
- * MIT licence
- * It was slighly modified to fit needs
+ * Este archivo es importado de ha-sankey-chart y está licenciado bajo
+ * licencia MIT
+ * Se modificó ligeramente para adaptarse a las necesidades
  */
 import { HomeAssistant } from "custom-card-helpers";
 import { Collection } from "home-assistant-js-websocket";
