@@ -61,6 +61,19 @@ export default css`
     text-overflow: ellipsis;
   }
 
+
+  .center-column {
+    display: flex;
+    width: 30%;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    margin-top: -4%;
+    margin-bottom: -4%;
+    border-radius: 50%;
+    background-color: var(--token-color-background-secondary);
+  }
+
   .serie {
     font-size: 20px;
     color: var(--primary-text-color);
@@ -107,18 +120,6 @@ export default css`
     background-color: var(--card-background-color); /* Color diferente */
     border-radius: 50%;
     z-index: 1;
-  }
-
-  .center-column {
-    display: flex;
-    width: 30%;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--card-background-color);
-    padding: 6px;
-    margin-top: -25px;
-    margin-bottom: -25px;
-    border-radius: 50%;
   }
 
   .chart-container {

@@ -70,6 +70,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     }
 
     this._energyData = {imported: 0, exported: 0, solar: 0, unit: 'kWh'};
+    // For 'consumption', dark orange is self-consumption, light orange is imported
     this._chartColors = config.chart_type !== 'consumption'
       ? ['#19ab6d', '#91de41']
       : ['#ff9800', '#ff5722'];
@@ -144,16 +145,33 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     if (!energyData.prefs) return;
 
     try {
+      // Nuevo método: soporta ambos formatos (arrays y campos directos)
+      const importedIds: string[] = [];
+      const exportedIds: string[] = [];
+      const solarIds: string[] = [];
+
+      for (const source of energyData.prefs.energy_sources) {
+        if (source.type === 'grid') {
+          // Formato nuevo: campos directos
+          if ((source as any).stat_energy_from) importedIds.push((source as any).stat_energy_from);
+          if ((source as any).stat_energy_to) exportedIds.push((source as any).stat_energy_to);
+          // Formato antiguo: arrays
+          if (Array.isArray((source as any).flow_from)) {
+            importedIds.push(...(source as any).flow_from.map((f: any) => f.stat_energy_from));
+          }
+          if (Array.isArray((source as any).flow_to)) {
+            exportedIds.push(...(source as any).flow_to.map((f: any) => f.stat_energy_to));
+          }
+        }
+        if (source.type === 'solar') {
+          if (source.stat_energy_from) solarIds.push(source.stat_energy_from);
+        }
+      }
+
       const statIds = {
-        imported: energyData.prefs.energy_sources
-          .filter((s: any) => s.type === 'grid')
-          .flatMap((s: any) => s.flow_from?.map((f: any) => f.stat_energy_from) || []),
-        exported: energyData.prefs.energy_sources
-          .filter((s: any) => s.type === 'grid')
-          .flatMap((s: any) => s.flow_to?.map((f: any) => f.stat_energy_to) || []),
-        solar: energyData.prefs.energy_sources
-          .filter((s: any) => s.type === 'solar')
-          .map((s: any) => s.stat_energy_from)
+        imported: importedIds,
+        exported: exportedIds,
+        solar: solarIds
       };
 
       const calculateSum = (ids: string[]) => {
@@ -227,8 +245,8 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       ];
     } else {
       data = [
-        this._energyData.imported,
-        this._energyData.solar - this._energyData.exported
+        this._energyData.solar - this._energyData.exported,
+        this._energyData.imported
       ];
     }
 
@@ -306,12 +324,14 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                 <div class="background">
                     <div class="left-column">
                         <div class="serie serie-one" style="color: ${this._chartColors[1]}">
-                            ${(this._energyData.solar - this._energyData.exported).toFixed(2)}
+                            ${this._config.chart_type !== 'consumption' ?
+                                (this._energyData.solar - this._energyData.exported).toFixed(2) :
+                                this._energyData.imported.toFixed(2)
+                            }
                             <span>${this._energyData.unit}</span>
                         </div>
                         <div class="serie-label">
-                            ${this._config.chart_type !== 'consumption' ? localize('CARD.AUTOCONSUMPTION') : localize('CARD.SOLAR_CONSUMPTION')}<br/>
-
+                            ${this._config.chart_type !== 'consumption' ? localize('CARD.AUTOCONSUMPTION') : localize('CARD.IMPORTED')}<br/>
                                 (${this._config.chart_type !== 'consumption' ?
                                     (this._energyData.solar > 0 ? (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2)
                                             : '0.00') :
@@ -335,11 +355,12 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                         <div class="serie serie-two" style="color: ${this._chartColors[0]}">
                             ${this._config.chart_type !== 'consumption' ?
                                     this._energyData.exported.toFixed(2) :
-                                    this._energyData.imported.toFixed(2)}
+                                    (this._energyData.solar - this._energyData.exported).toFixed(2)
+                            }
                             <span>${this._energyData.unit}</span>
                         </div>
                         <div class="serie-label">
-                            ${this._config.chart_type !== 'consumption' ? localize('CARD.EXPORTED') : localize('CARD.IMPORTED')}<br/>
+                            ${this._config.chart_type !== 'consumption' ? localize('CARD.EXPORTED') : localize('CARD.SOLAR_CONSUMPTION')}<br/>
                                 (${this._config.chart_type !== 'consumption' ?
                                     (isNaN(this._energyData.exported / this._energyData.solar * 100) ?0: this._energyData.exported / this._energyData.solar * 100).toFixed(2) :
                                     (isNaN(((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100)?0:((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100).toFixed(2)

@@ -25,11 +25,14 @@ const plugins = [
     hook: 'buildStart', // Se ejecuta antes de cada compilación
   }),
   nodeResolve({}),
-  commonjs(),
+  commonjs({
+    include: /node_modules/,
+  }),
   typescript(),
   json(),
   babel({
     exclude: 'node_modules/**',
+    babelHelpers: 'bundled',
   }),
   dev && serve(serveopts),
   !dev && terser(),
