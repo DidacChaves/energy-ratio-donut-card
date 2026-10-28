@@ -1,3 +1,17 @@
+## [2.0.0](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.3.0...v2.0.0) (2026-10-28)
+
+### ⚠ BREAKING CHANGES
+
+* the unused `area` option and its editor field were removed,
+`localize()` now takes the language as second argument, and the card no longer
+re-renders on every hass update.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+### Features
+
+* support batteries, rebuild the editor with ha-form and fix leaks ([c441f36](https://github.com/DidacChaves/energy-ratio-donut-card/commit/c441f36f819305b02a8f917c915c7e410b14edbb))
+
 ## [1.2.1](https://github.com/DidacChaves/energy-ratio-donut-card/compare/v1.2.0...v1.2.1) (2025-05-08)
 
 ### Bug Fixes
