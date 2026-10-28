@@ -15,11 +15,14 @@
   },
   "EDITOR": {
     "NAME": "Name (Optional)",
-    "AREA": "Area to display",
     "CHART_TYPE": "Chart Type",
     "CHART_TYPE_SOLAR": "Solar Production",
     "CHART_TYPE_CONSUMPTION": "Grid Consumption",
     "COLLECTION_KEY": "Energy Collection Key",
-    "SHOW_DATE": "Show date"
+    "SHOW_DATE": "Show date",
+    "TAP_ACTION": "Tap behavior",
+    "HOLD_ACTION": "Hold behavior",
+    "DOUBLE_TAP_ACTION": "Double tap behavior",
+    "INTERACTIONS": "Interactions"
   }
 }

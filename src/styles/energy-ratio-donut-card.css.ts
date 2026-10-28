@@ -45,7 +45,7 @@ export default css`
     border-radius: 10px;
     margin-top: 25px;
     margin-bottom: 25px;
-    background-color: var(--token-color-background-secondary);
+    background-color: var(--secondary-background-color);
   }
 
   .left-column, .right-column {
@@ -71,7 +71,7 @@ export default css`
     margin-top: -4%;
     margin-bottom: -4%;
     border-radius: 50%;
-    background-color: var(--token-color-background-secondary);
+    background-color: var(--secondary-background-color);
   }
 
   .serie {
@@ -105,7 +105,7 @@ export default css`
 
   .serie-center.no-data {
     position: relative;
-    background-color: var(--token-color-background-secondary);
+    background-color: var(--secondary-background-color);
     border-radius: 50%;
   }
 
@@ -125,7 +125,7 @@ export default css`
   .chart-container {
     position: relative;
     width: 100%;
-    height: 100%;
+    aspect-ratio: 1;
   }
 
   canvas {

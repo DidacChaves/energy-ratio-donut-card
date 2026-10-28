@@ -15,11 +15,14 @@
   },
   "EDITOR": {
     "NAME": "Name (Optional)",
-    "AREA": "Anzeigebereich",
     "CHART_TYPE": "Diagrammtyp",
     "CHART_TYPE_SOLAR": "Solarproduktion",
     "CHART_TYPE_CONSUMPTION": "Netzverbrauch",
     "COLLECTION_KEY": "Energie-Sammlungsschlüssel",
-    "SHOW_DATE": "Datum anzeigen"
+    "SHOW_DATE": "Datum anzeigen",
+    "TAP_ACTION": "Verhalten beim Tippen",
+    "HOLD_ACTION": "Verhalten beim Halten",
+    "DOUBLE_TAP_ACTION": "Verhalten beim Doppeltippen",
+    "INTERACTIONS": "Interaktionen"
   }
 }

@@ -15,11 +15,14 @@
   },
   "EDITOR": {
     "NAME": "Nom (Opcional)",
-    "AREA": "Àrea a mostrar",
     "CHART_TYPE": "Tipus de Gràfic",
     "CHART_TYPE_SOLAR": "Producció Solar",
     "CHART_TYPE_CONSUMPTION": "Consum de Xarxa",
     "COLLECTION_KEY": "Clau de Col·lecció Energètica",
-    "SHOW_DATE": "Mostrar data"
+    "SHOW_DATE": "Mostrar data",
+    "TAP_ACTION": "Comportament en tocar",
+    "HOLD_ACTION": "Comportament en mantenir",
+    "DOUBLE_TAP_ACTION": "Comportament en doble toc",
+    "INTERACTIONS": "Interaccions"
   }
 }

@@ -15,11 +15,14 @@
   },
   "EDITOR": {
     "NAME": "Nome (Opzionale)",
-    "AREA": "Area da visualizzare",
     "CHART_TYPE": "Tipo di Grafico",
     "CHART_TYPE_SOLAR": "Produzione Solare",
     "CHART_TYPE_CONSUMPTION": "Consumo Rete",
     "COLLECTION_KEY": "Chiave Raccolta Energia",
-    "SHOW_DATE": "Mostra data"
+    "SHOW_DATE": "Mostra data",
+    "TAP_ACTION": "Comportamento al tocco",
+    "HOLD_ACTION": "Comportamento alla pressione prolungata",
+    "DOUBLE_TAP_ACTION": "Comportamento al doppio tocco",
+    "INTERACTIONS": "Interazioni"
   }
 }

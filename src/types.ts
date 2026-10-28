@@ -16,20 +16,16 @@ export interface LovelaceGridOptions {
   max_rows?: number;
 }
 
+export type ChartType = 'solar' | 'consumption';
 
-// TODO Add your configuration elements here for type-checking
 export interface EnergyRatioDonutConfig extends LovelaceCardConfig {
   type: string;
   name?: string;
-  show_warning?: boolean;
-  show_error?: boolean;
-  test_gui?: boolean;
+  collection_key?: string;
+  chart_type?: ChartType;
+  show_date?: boolean;
   tap_action?: ActionConfig;
   hold_action?: ActionConfig;
   double_tap_action?: ActionConfig;
-  view_layout?: never;
-  collection_key?: string;
   grid_options?: LovelaceGridOptions;
-  chart_type?: string;
-  show_date?: boolean;
 }

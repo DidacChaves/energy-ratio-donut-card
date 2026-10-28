@@ -3,7 +3,6 @@ import {CSSResultGroup, html, LitElement, PropertyValues, TemplateResult} from '
 import {customElement, property, state} from 'lit/decorators.js';
 import {
   ActionHandlerEvent,
-  getLovelace,
   handleAction,
   hasAction,
   HomeAssistant,
@@ -13,10 +12,14 @@ import {
 import type {EnergyRatioDonutConfig} from './types';
 import {actionHandler} from './action-handler-directive';
 import {localize} from './localize/localize';
-import Chart from 'chart.js/auto';
+import {ArcElement, Chart, DoughnutController} from 'chart.js';
 import {getEnergyDataCollection, EnergyData, EnergyCollection} from './utils/energy';
+import {round} from './utils/utils';
+import {computeRatios} from './utils/ratios';
 import {CARD_VERSION} from "./const";
 import styles from './styles/energy-ratio-donut-card.css'
+
+Chart.register(DoughnutController, ArcElement);
 
 /* eslint no-console: 0 */
 console.info(
@@ -34,9 +37,19 @@ console.info(
   preview: true
 });
 
+const COLLECTION_RETRIES = 5;
+const COLLECTION_RETRY_MS = 150;
+
+const SOLAR_COLORS = ['#19ab6d', '#91de41'];
+// For 'consumption', dark orange is self-consumption, light orange is imported
+const CONSUMPTION_COLORS = ['#ff9800', '#ff5722'];
+
 @customElement('energy-ratio-donut-card')
 export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
   private _energyCollection?: EnergyCollection | null;
+  private _unsubscribe?: () => void;
+  private _retryTimer?: number;
+  private chartInstance: Chart | null = null;
 
   @property({attribute: false}) public hass!: HomeAssistant;
   @state() private _config!: EnergyRatioDonutConfig;
@@ -45,9 +58,10 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     imported: 0,
     exported: 0,
     solar: 0,
+    batteryIn: 0,
+    batteryOut: 0,
     unit: 'kWh'
   };
-  @state() private _chartColors = ['#19ab6d', '#91de41'];
   @state() private _dataLoaded = false;
   @state() private _showErrorState = false;
   @state() private _errorMessage = '';
@@ -58,28 +72,24 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
   }
 
   public static getStubConfig(): Record<string, unknown> {
-    return {};
+    return {chart_type: 'solar'};
   }
 
   public setConfig(config: EnergyRatioDonutConfig): void {
     if (!config) {
-      throw new Error(localize('common.invalid_configuration'));
-    }
-    if (config.test_gui) {
-      getLovelace().setEditMode(true);
+      throw new Error(localize('COMMON.INVALID_CONFIGURATION', this.hass?.language));
     }
 
-    this._energyData = {imported: 0, exported: 0, solar: 0, unit: 'kWh'};
-    // For 'consumption', dark orange is self-consumption, light orange is imported
-    this._chartColors = config.chart_type !== 'consumption'
-      ? ['#19ab6d', '#91de41']
-      : ['#ff9800', '#ff5722'];
-
+    const previousKey = this._config?.collection_key;
     this._config = {
-      name: config.chart_type !== 'consumption' ? localize('CARD.ENERGY_PRODUCTION_TITLE'): localize('CARD.CONSUMPTION_TITLE'),
-      collection_key: config.collection_key ? config.collection_key : 'energy',
       ...config,
+      collection_key: config.collection_key || 'energy',
     };
+
+    // The editor sends a new config on every change: only resubscribe if the collection changed
+    if (this.isConnected && previousKey !== this._config.collection_key) {
+      this._trySubscribe();
+    }
   }
 
   public async getCardSize(): Promise<number> {
@@ -95,112 +105,151 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     };
   }
 
+  private get _isConsumption(): boolean {
+    return this._config?.chart_type === 'consumption';
+  }
+
+  private get _chartColors(): string[] {
+    return this._isConsumption ? CONSUMPTION_COLORS : SOLAR_COLORS;
+  }
+
+  private get _title(): string {
+    return this._config.name
+      || localize(this._isConsumption ? 'CARD.CONSUMPTION_TITLE' : 'CARD.ENERGY_PRODUCTION_TITLE', this.hass?.language);
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
-    window.addEventListener('resize', this.resizeChartContainer);
-
-    const initEnergyCollection = (attempts = 0) => {
-      if (!this.hass) {
-        if (attempts < 5) {
-          setTimeout(() => initEnergyCollection(attempts + 1), 100);
-        } else {
-          this._showErrorState = true;
-          this._errorMessage = localize('ERROR.NO_ENERGY_DATA');
-          this.requestUpdate();
-        }
-        return;
-      }
-
-      if (!this._energyCollection) {
-        this._energyCollection = getEnergyDataCollection(this.hass, '_' + this._config.collection_key);
-      }
-
-      if (!this._energyCollection) {
-        if (attempts < 5) {
-          setTimeout(() => initEnergyCollection(attempts + 1), 150);
-        } else {
-          this._showErrorState = true;
-          this._errorMessage = localize('ERROR.NO_ENERGY_DATA');
-          this.requestUpdate();
-        }
-        return;
-      }
-      this._energyCollection.subscribe((energyData: EnergyData) => {
-        this._globalPeriod = {
-          start: energyData.start,
-          end: energyData.end || new Date(),
-        };
-        this._updateEnergyDataFromCollection(energyData);
-      });
-    };
-    initEnergyCollection();
+    this._trySubscribe();
   }
 
   disconnectedCallback(): void {
-    window.removeEventListener('resize', this.resizeChartContainer);
+    this._clearRetry();
+    this._unsubscribeCollection();
+    this.chartInstance?.destroy();
+    this.chartInstance = null;
     super.disconnectedCallback();
   }
 
-  private async _updateEnergyDataFromCollection(energyData: EnergyData) {
+  private _clearRetry(): void {
+    if (this._retryTimer !== undefined) {
+      window.clearTimeout(this._retryTimer);
+      this._retryTimer = undefined;
+    }
+  }
+
+  private _unsubscribeCollection(): void {
+    this._unsubscribe?.();
+    this._unsubscribe = undefined;
+    this._energyCollection = null;
+  }
+
+  /**
+   * HA creates the energy collection when an `energy-date-selection` card (or the energy panel) is loaded,
+   * so it may not exist yet: retry a few times before showing the error.
+   */
+  private _trySubscribe(attempt = 0): void {
+    this._clearRetry();
+    if (!this.isConnected || !this._config) return;
+
+    const collection = this.hass
+      ? getEnergyDataCollection(this.hass, '_' + this._config.collection_key)
+      : null;
+
+    if (!collection) {
+      if (attempt < COLLECTION_RETRIES) {
+        this._retryTimer = window.setTimeout(() => this._trySubscribe(attempt + 1), COLLECTION_RETRY_MS);
+      } else {
+        this._showErrorState = true;
+        this._errorMessage = localize('ERROR.NO_ENERGY_DATA', this.hass?.language);
+      }
+      return;
+    }
+
+    this._showErrorState = false;
+    if (collection === this._energyCollection && this._unsubscribe) return;
+
+    this._unsubscribeCollection();
+    this._energyCollection = collection;
+    this._unsubscribe = collection.subscribe((energyData: EnergyData) => {
+      this._globalPeriod = {
+        start: energyData.start,
+        end: energyData.end || new Date(),
+      };
+      this._updateEnergyDataFromCollection(energyData);
+    });
+  }
+
+  private _updateEnergyDataFromCollection(energyData: EnergyData): void {
     if (!energyData.prefs) return;
 
     try {
-      // New method: supports both formats (arrays and direct fields)
-      const importedIds: string[] = [];
-      const exportedIds: string[] = [];
-      const solarIds: string[] = [];
+      // Sets avoid counting the same statistic twice if a source is declared in both formats
+      const importedIds = new Set<string>();
+      const exportedIds = new Set<string>();
+      const solarIds = new Set<string>();
+      const batteryInIds = new Set<string>();
+      const batteryOutIds = new Set<string>();
 
       for (const source of energyData.prefs.energy_sources) {
         if (source.type === 'grid') {
-          // New format: direct fields
-          if ((source as any).stat_energy_from) importedIds.push((source as any).stat_energy_from);
-          if ((source as any).stat_energy_to) exportedIds.push((source as any).stat_energy_to);
-          // Old format: arrays
-          if (Array.isArray((source as any).flow_from)) {
-            importedIds.push(...(source as any).flow_from.map((f: any) => f.stat_energy_from));
+          // Current format: flow_from / flow_to arrays
+          for (const flow of (source as any).flow_from ?? []) {
+            if (flow.stat_energy_from) importedIds.add(flow.stat_energy_from);
           }
-          if (Array.isArray((source as any).flow_to)) {
-            exportedIds.push(...(source as any).flow_to.map((f: any) => f.stat_energy_to));
+          for (const flow of (source as any).flow_to ?? []) {
+            if (flow.stat_energy_to) exportedIds.add(flow.stat_energy_to);
           }
+          // Legacy format: fields directly on the source
+          if ((source as any).stat_energy_from) importedIds.add((source as any).stat_energy_from);
+          if ((source as any).stat_energy_to) exportedIds.add((source as any).stat_energy_to);
         }
-        if (source.type === 'solar') {
-          if (source.stat_energy_from) solarIds.push(source.stat_energy_from);
+        if (source.type === 'solar' && source.stat_energy_from) {
+          solarIds.add(source.stat_energy_from);
+        }
+        if (source.type === 'battery') {
+          if (source.stat_energy_to) batteryInIds.add(source.stat_energy_to);
+          if (source.stat_energy_from) batteryOutIds.add(source.stat_energy_from);
         }
       }
 
-      const statIds = {
-        imported: importedIds,
-        exported: exportedIds,
-        solar: solarIds
-      };
-
-      const calculateSum = (ids: string[]) => {
-        return ids.reduce((sum, id) => {
-          const changes = energyData.stats[id]?.map((s: any) => s.change).filter((v: any) => v !== null);
-          return sum + (changes?.reduce((a: number, b: number) => a + b, 0) || 0);
-        }, 0);
+      const calculateSum = (ids: Set<string>): number => {
+        let total = 0;
+        for (const id of ids) {
+          for (const stat of energyData.stats[id] ?? []) {
+            if (stat.change !== null && stat.change !== undefined) total += stat.change;
+          }
+        }
+        return round(total);
       };
 
       this._energyData = {
-        imported: Math.round(calculateSum(statIds.imported) * 100) / 100,
-        exported: Math.round(calculateSum(statIds.exported) * 100) / 100,
-        solar: Math.round(calculateSum(statIds.solar) * 100) / 100,
+        imported: calculateSum(importedIds),
+        exported: calculateSum(exportedIds),
+        solar: calculateSum(solarIds),
+        batteryIn: calculateSum(batteryInIds),
+        batteryOut: calculateSum(batteryOutIds),
         unit: 'kWh'
       };
-
       this._dataLoaded = true;
-      this.requestUpdate();
-
     } catch (err) {
       console.error("Error updating energy data from collection:", err);
     }
   }
 
   protected shouldUpdate(changedProps: PropertyValues): boolean {
-    return changedProps.has('hass') ||
-      changedProps.has('_config') ||
-      changedProps.has('_energyData') ||
-      changedProps.has('_globalPeriod');
+    // hass changes with every state update in HA; only the first one matters here
+    if (changedProps.size === 1 && changedProps.has('hass')) {
+      return changedProps.get('hass') === undefined;
+    }
+    return true;
+  }
+
+  protected willUpdate(changedProps: PropertyValues): void {
+    // Retry once per hass update after an error, in case the collection has appeared since
+    if (this._showErrorState && changedProps.has('hass')) {
+      this._trySubscribe(COLLECTION_RETRIES);
+    }
   }
 
   private _formatDate(date: Date): string {
@@ -211,54 +260,38 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
     });
   }
 
-  private resizeChartContainer = () => {
-    requestAnimationFrame(() => {
-      const chartContainer = this.shadowRoot?.getElementById('chart-container');
-      if (chartContainer) {
-        setTimeout(() => {
-          const width = chartContainer.offsetWidth;
-          chartContainer.style.height = `${width}px`;
-        }, 500);
-      }
-    });
-  };
-
-  private chartInstance: Chart | null = null;
+  /** Values shown by the card, always non-negative and with safe percentages. */
+  private _computeView() {
+    const view = computeRatios(this._energyData, this._config?.chart_type);
+    return this._isConsumption
+      ? {...view, leftLabel: 'CARD.IMPORTED', rightLabel: 'CARD.SOLAR_CONSUMPTION'}
+      : {...view, leftLabel: 'CARD.AUTOCONSUMPTION', rightLabel: 'CARD.EXPORTED'};
+  }
 
   private _renderChart() {
-    if (!this._dataLoaded || !this._energyData || !this.shadowRoot) {
-      return;
+    const canvas = this.shadowRoot?.getElementById('myChart') as HTMLCanvasElement | null;
+
+    // The canvas disappears while the error card is shown and is new when it comes back
+    if (this.chartInstance && this.chartInstance.canvas !== canvas) {
+      this.chartInstance.destroy();
+      this.chartInstance = null;
     }
-    if (!this.shadowRoot) {
-      return;
-    }
-    const ctx = this.shadowRoot.getElementById('myChart') as HTMLCanvasElement;
-    if (!ctx) {
+    if (!this._dataLoaded || !canvas) {
       return;
     }
 
-    let data: number[];
-    if (this._config.chart_type !== 'consumption') {
-      data = [
-        this._energyData.exported,
-        this._energyData.solar - this._energyData.exported
-      ];
-    } else {
-      data = [
-        this._energyData.solar - this._energyData.exported,
-        this._energyData.imported
-      ];
-    }
+    const data = this._computeView().chart;
 
     if (this.chartInstance) {
-      this.chartInstance.data.datasets[0].data = data;
-      this.chartInstance.data.datasets[0].backgroundColor = this._chartColors;
-      this.chartInstance.data.datasets[0].hoverBackgroundColor = this._chartColors;
+      const dataset = this.chartInstance.data.datasets[0];
+      dataset.data = data;
+      dataset.backgroundColor = this._chartColors;
+      dataset.hoverBackgroundColor = this._chartColors;
       this.chartInstance.update();
       return;
     }
 
-    this.chartInstance = new Chart(ctx, {
+    this.chartInstance = new Chart(canvas, {
       type: 'doughnut',
       data: {
         datasets: [{
@@ -287,14 +320,17 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
   protected updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    if (changedProperties.has('_energyData') || changedProperties.has('_dataLoaded')) {
+    if (
+      changedProperties.has('_energyData') ||
+      changedProperties.has('_dataLoaded') ||
+      changedProperties.has('_config') ||
+      changedProperties.has('_showErrorState')
+    ) {
       this._renderChart();
-      this.resizeChartContainer();
     }
   }
 
   protected render(): TemplateResult | void {
-
     if (!this._config || !this.hass) {
       return html``;
     }
@@ -303,7 +339,10 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
       return this._showError(this._errorMessage);
     }
 
-    const consumoTotal = (this._energyData.solar - this._energyData.exported) + this._energyData.imported;
+    const lang = this.hass.language;
+    const view = this._computeView();
+    const unit = this._energyData.unit;
+
     return html`
         <ha-card
                 @action=${this._handleAction}
@@ -313,7 +352,7 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                 })}
                 tabindex="0">
             <div class="header">
-                <div class="name" title="${this._config.name}">${this._config.name}</div>
+                <div class="name" title="${this._title}">${this._title}</div>
                 ${this._globalPeriod && this._config.show_date ? html`
                     <div class="period-info">
                         ${this._formatDate(this._globalPeriod.start)} - ${this._formatDate(this._globalPeriod.end)}
@@ -324,47 +363,31 @@ export class EnergyRatioDonutCard extends LitElement implements LovelaceCard {
                 <div class="background">
                     <div class="left-column">
                         <div class="serie serie-one" style="color: ${this._chartColors[1]}">
-                            ${this._config.chart_type !== 'consumption' ?
-                                (this._energyData.solar - this._energyData.exported).toFixed(2) :
-                                this._energyData.imported.toFixed(2)
-                            }
-                            <span>${this._energyData.unit}</span>
+                            ${view.left.value.toFixed(2)}
+                            <span>${unit}</span>
                         </div>
                         <div class="serie-label">
-                            ${this._config.chart_type !== 'consumption' ? localize('CARD.AUTOCONSUMPTION') : localize('CARD.IMPORTED')}<br/>
-                                (${this._config.chart_type !== 'consumption' ?
-                                    (this._energyData.solar > 0 ? (((this._energyData.solar - this._energyData.exported) / this._energyData.solar) * 100).toFixed(2)
-                                            : '0.00') :
-                                    (isNaN((this._energyData.imported / consumoTotal) * 100)?0:(this._energyData.imported / consumoTotal) * 100).toFixed(2)
-                            }%)
+                            ${localize(view.leftLabel, lang)}<br/>
+                            (${view.left.pct.toFixed(2)}%)
                         </div>
                     </div>
                     <div class="center-column">
                         <div id="chart-container" class="chart-container">
                             <canvas id="myChart"></canvas>
-                            <div class="serie serie-center ${this._energyData.solar === 0 ? ' no-data' : ''}">
-                                ${this._config.chart_type !== 'consumption' ?
-                                        (this._energyData.solar).toFixed(2) :
-                                        ((this._energyData.solar - this._energyData.exported) + this._energyData.imported).toFixed(2)
-                                }
-                                <span>${(this._energyData.unit)}</span>
+                            <div class="serie serie-center ${view.hasData ? '' : 'no-data'}">
+                                ${view.center.toFixed(2)}
+                                <span>${unit}</span>
                             </div>
                         </div>
                     </div>
                     <div class="right-column">
                         <div class="serie serie-two" style="color: ${this._chartColors[0]}">
-                            ${this._config.chart_type !== 'consumption' ?
-                                    this._energyData.exported.toFixed(2) :
-                                    (this._energyData.solar - this._energyData.exported).toFixed(2)
-                            }
-                            <span>${this._energyData.unit}</span>
+                            ${view.right.value.toFixed(2)}
+                            <span>${unit}</span>
                         </div>
                         <div class="serie-label">
-                            ${this._config.chart_type !== 'consumption' ? localize('CARD.EXPORTED') : localize('CARD.SOLAR_CONSUMPTION')}<br/>
-                                (${this._config.chart_type !== 'consumption' ?
-                                    (isNaN(this._energyData.exported / this._energyData.solar * 100) ?0: this._energyData.exported / this._energyData.solar * 100).toFixed(2) :
-                                    (isNaN(((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100)?0:((this._energyData.solar - this._energyData.exported) / consumoTotal) * 100).toFixed(2)
-                            }%)
+                            ${localize(view.rightLabel, lang)}<br/>
+                            (${view.right.pct.toFixed(2)}%)
                         </div>
                     </div>
                 </div>

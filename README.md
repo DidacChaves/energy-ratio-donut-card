@@ -62,6 +62,24 @@ resources:
 | `name`           | string  | **Optional**   | Card name                                 | -        |
 | `collection_key` | string  | **Optional**   | Energy dashboard collection key           | `energy` |
 | `chart_type`     | string  | **Optional**   | `solar` or `consumption` display mode     | `solar`  |
+| `show_date`      | boolean | **Optional**   | Show the selected period in the header    | `false`  |
+| `tap_action`     | object  | **Optional**   | [Action](https://www.home-assistant.io/dashboards/actions/) on tap         | -        |
+| `hold_action`    | object  | **Optional**   | Action on hold                            | -        |
+| `double_tap_action` | object | **Optional**  | Action on double tap                      | -        |
+
+> The card reads the period from the energy dashboard collection, so the same view must contain a
+> `type: energy-date-selection` card (use `collection_key` if it has a custom one).
+
+### Battery
+
+If your energy dashboard has a battery, the card takes it into account automatically:
+
+- **Solar view:** solar energy stored in the battery counts as self-consumption, not as exported.
+- **Consumption view:** the energy discharged from the battery counts as self-supplied (not imported), and
+  energy charged into the battery is not counted as home consumption. The battery is assumed to charge from
+  solar first and from the grid for the rest.
+
+Without a battery the numbers are the same as before.
 
 ## Examples
 
